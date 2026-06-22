@@ -1,0 +1,23 @@
+{
+  "name": "ripgrep",
+  "version": "14.1.0",
+  "description": "Fast line-oriented search tool",
+  "homepage": "https://github.com/BurntSushi/ripgrep",
+  "architectures": {
+    "windows-amd64": {
+      "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-msvc.zip",
+      "sha256": "f9282e4d99cd4e3f592b8396eb5fccbaed33eefd6580d14e857ba8367dbf14d4",
+      "bin": ["rg.exe:rg"]
+    },
+    "darwin-arm64": {
+      "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-aarch64-apple-darwin.tar.gz",
+      "sha256": "fc59ca3eaa5b5bcfa1488eeb80291bad0e8e2842e05d4400fc7b29d5ee4bd26b",
+      "bin": ["rg:rg"]
+    },
+    "darwin-amd64": {
+      "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-apple-darwin.tar.gz",
+      "sha256": "4d882fc945e5a9b6080a5c0506f7fe4aaea191c1865355428dd4bfa096f974b5",
+      "bin": ["rg:rg"]
+    }
+  }
+}
