@@ -63,7 +63,7 @@ func LoadManifest(name string, homeDir string) (*Manifest, error) {
 		return ParseManifest(data)
 	}
 
-	onlineURL := fmt.Sprintf("https://raw.githubusercontent.com/akhileshg0111/quest/main/manifests/%s", name)
+	onlineURL := fmt.Sprintf("https://raw.githubusercontent.com/akhileshg1124/quest/main/manifests/%s", name)
 	resp, err := http.Get(onlineURL)
 	if err == nil && resp.StatusCode == http.StatusOK {
 		defer resp.Body.Close()
