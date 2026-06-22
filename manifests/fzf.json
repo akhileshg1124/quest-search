@@ -1,0 +1,23 @@
+{
+  "name": "fzf",
+  "version": "0.53.0",
+  "description": "Command-line fuzzy finder",
+  "homepage": "https://github.com/junegunn/fzf",
+  "architectures": {
+    "windows-amd64": {
+      "url": "https://github.com/junegunn/fzf/releases/download/v0.53.0/fzf-0.53.0-windows_amd64.zip",
+      "sha256": "21066c0d60c3886f44d56d10f845d0ed9ce967e889410116b40344b41b12b509",
+      "bin": ["fzf.exe"]
+    },
+    "darwin-arm64": {
+      "url": "https://github.com/junegunn/fzf/releases/download/v0.53.0/fzf-0.53.0-darwin_arm64.zip",
+      "sha256": "433a0058e1c66761925b64c09d5718a28795c371f1624b51829e5a1b3b19b646",
+      "bin": ["fzf"]
+    },
+    "darwin-amd64": {
+      "url": "https://github.com/junegunn/fzf/releases/download/v0.53.0/fzf-0.53.0-darwin_amd64.zip",
+      "sha256": "",
+      "bin": ["fzf"]
+    }
+  }
+}
