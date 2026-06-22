@@ -1,0 +1,13 @@
+{
+  "name": "wget",
+  "version": "1.21.4",
+  "description": "Retrieves files from the web",
+  "homepage": "https://eternallybored.org/misc/wget/",
+  "architectures": {
+    "windows-amd64": {
+      "url": "https://eternallybored.org/misc/wget/releases/wget-1.21.4-win64.zip",
+      "sha256": "",
+      "bin": ["wget.exe"]
+    }
+  }
+}
