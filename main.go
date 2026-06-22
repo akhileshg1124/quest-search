@@ -27,6 +27,7 @@ Usage:
 Commands:
   install <package>    Install a package
   uninstall <package>  Uninstall a package
+  upgrade <package>    Upgrade a package to the latest version
   list                 List installed packages
   search <query>       Search for packages in the registry
   info <package>       Show details about a package
@@ -111,6 +112,19 @@ func main() {
 			os.Exit(1)
 		}
 
+	case "upgrade":
+		if len(cmdArgs) < 1 {
+			fmt.Println("Error: Please specify a package name to upgrade.")
+			fmt.Println("Usage: quest upgrade <package>")
+			os.Exit(1)
+		}
+		pkgName := cmdArgs[0]
+		err := handleUpgrade(pkgName, *osFlag, *archFlag, homeDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error upgrading package: %v\n", err)
+			os.Exit(1)
+		}
+
 	case "list":
 		err := handleList(homeDir)
 		if err != nil {
@@ -143,7 +157,11 @@ func main() {
 		}
 
 	case "update":
-		handleUpdate()
+		err := handleUpdate(homeDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error updating registry: %v\n", err)
+			os.Exit(1)
+		}
 
 	case "help", "-h", "--help":
 		printUsage()
@@ -273,6 +291,33 @@ func handleUninstall(pkgName string, homeDir string) error {
 	return nil
 }
 
+func handleUpgrade(pkgName, targetOS, targetArch, homeDir string) error {
+	fmt.Printf("Checking for upgrades for %s...\n", pkgName)
+
+	r, err := LoadReceipt(pkgName, homeDir)
+	if err != nil {
+		return fmt.Errorf("package %s is not installed; run 'quest install %s' instead", pkgName, pkgName)
+	}
+
+	m, err := LoadManifest(pkgName, homeDir)
+	if err != nil {
+		return err
+	}
+
+	if r.Version == m.Version {
+		fmt.Printf("Package %s is already at the latest version (%s).\n", m.Name, m.Version)
+		return nil
+	}
+
+	fmt.Printf("Upgrading %s from version %s to %s...\n", m.Name, r.Version, m.Version)
+
+	if err := handleUninstall(pkgName, homeDir); err != nil {
+		return fmt.Errorf("failed to uninstall old version: %w", err)
+	}
+
+	return handleInstall(pkgName, targetOS, targetArch, homeDir)
+}
+
 func handleList(homeDir string) error {
 	receiptDir := filepath.Join(homeDir, "receipts")
 	entries, err := os.ReadDir(receiptDir)
@@ -354,8 +399,54 @@ func handleInfo(pkgName string, homeDir string) error {
 	return nil
 }
 
-func handleUpdate() {
-	fmt.Println("Updating manifest database...")
-	fmt.Println("Manifest database is up to date (using embedded v1.0.0).")
-	fmt.Println("To add custom manifests, place them in ~/.quest/manifests/")
+func handleUpdate(homeDir string) error {
+	fmt.Println("Updating package manifests from registry...")
+
+	zipURL := "https://github.com/akhileshg1124/quest-search/archive/refs/heads/main.zip"
+	tempZip := filepath.Join(homeDir, "cache", "registry-update.zip")
+	tempExtractDir := filepath.Join(homeDir, "cache", "registry-extracted")
+
+	os.RemoveAll(tempExtractDir)
+	os.Remove(tempZip)
+
+	if err := DownloadFile(zipURL, tempZip); err != nil {
+		return fmt.Errorf("failed to fetch updates from registry: %w", err)
+	}
+
+	if err := ExtractArchive(tempZip, tempExtractDir); err != nil {
+		return fmt.Errorf("failed to extract updates: %w", err)
+	}
+
+	extractedManifestsDir := filepath.Join(tempExtractDir, "manifests")
+	if _, err := os.Stat(extractedManifestsDir); os.IsNotExist(err) {
+		entries, err := os.ReadDir(tempExtractDir)
+		if err == nil && len(entries) > 0 {
+			extractedManifestsDir = filepath.Join(tempExtractDir, entries[0].Name(), "manifests")
+		}
+	}
+
+	destManifestsDir := filepath.Join(homeDir, "manifests")
+	entries, err := os.ReadDir(extractedManifestsDir)
+	if err != nil {
+		return fmt.Errorf("no manifests found in registry: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+
+		srcFile := filepath.Join(extractedManifestsDir, entry.Name())
+		destFile := filepath.Join(destManifestsDir, entry.Name())
+
+		if err := copyFile(srcFile, destFile); err != nil {
+			fmt.Printf("Warning: Failed to update manifest %s: %v\n", entry.Name(), err)
+		}
+	}
+
+	os.RemoveAll(tempExtractDir)
+	os.Remove(tempZip)
+
+	fmt.Println("Registry manifests updated successfully!")
+	return nil
 }
